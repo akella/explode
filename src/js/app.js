@@ -16,6 +16,7 @@ var OrbitControls = require('three-orbit-controls')(THREE);
 function getRandomAxis() {
   return new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 ).normalize();
 }
+const sign = function(n) { return n === 0 ? 1 : n/Math.abs(n); };
 
 
 // make that for buffer geometry .attributes.position
@@ -41,7 +42,12 @@ export default class Sketch {
     });
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(window.innerWidth, window.innerWidth);
+
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.mouseX = 0;
+    this.mouseY = 0;
+    this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor( 0x000000, 1 );
 
     this.container = document.getElementById('container');
@@ -56,7 +62,7 @@ export default class Sketch {
     // var frustumSize = 10;
     // var aspect = window.innerWidth / window.innerHeight;
     // this.camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -1000, 1000 );
-    this.camera.position.set( 0, 5, 14 );
+    this.camera.position.set( 0, 0,4 );
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.time = 0;
     this.loader = new THREE.GLTFLoader().setPath( 'models/' );
@@ -74,6 +80,7 @@ export default class Sketch {
     this.animate();
     this.load();
     this.settings();
+    this.mouse();
 
     // let g = new THREE.BoxBufferGeometry(2,2,2);
     // let m = new THREE.MeshBasicMaterial( {color: 0x00ff00});
@@ -100,7 +107,7 @@ export default class Sketch {
     let poses = [];
     this.voron = [];
 
-    this.loader.load( 'heart.glb', function( gltf ) {
+    this.loader.load( 'heart-high.glb', function( gltf ) {
  
       // console.log(gltf.scene);
 
@@ -299,10 +306,10 @@ export default class Sketch {
   }
 
   resize() {
-    var w = window.innerWidth;
-    var h = window.innerHeight;
-    this.renderer.setSize( w, h );
-    this.camera.aspect = w / h;
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.renderer.setSize(this.width, this.height);
+    this.camera.aspect = this.width / this.height;
     this.camera.updateProjectionMatrix();
   }
 
@@ -426,13 +433,25 @@ export default class Sketch {
   }
 
 
+  mouse() {
+
+    document.addEventListener('mousemove',(e) => {
+      this.mouseX = 2*(e.clientX - this.width/2)/this.width;
+      this.mouseY = 2*(e.clientY - this.height/2)/this.height;
+      let dist = Math.sqrt(this.mouseX*this.mouseX + this.mouseY*this.mouseY);
+      dist = this.mouseX;
+      this.settings.progress = dist*dist;
+    });
+  }
+
+
 
   animate() {
     this.time += 0.05;
     this.material.uniforms.progress.value = this.settings.progress;
     this.material1.uniforms.progress.value = this.settings.progress;
     let t = this.settings.progress;
-    this.scene.rotation.y = t*(2 - t)*2*Math.PI;
+    this.scene.rotation.y = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
     requestAnimationFrame(this.animate.bind(this));
     this.render();
   }
