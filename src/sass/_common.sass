@@ -1,0 +1,56 @@
+body
+	background: #FFF
+	+css-lock(16, 50, 600, 1000)
+	line-height: 1.4
+	font-family: 'Montserrat', sans-serif
+.tooltip
+	position: absolute
+	left: 0
+	top: 0
+	margin-top: -100px 
+	// border: 1px solid green 
+	margin-left: 90px 
+	// opacity: 0
+	padding: 5px 
+	font-size: 14px 
+	text-transform: uppercase
+	color: #444 
+	&__left
+		position: absolute
+		height: 100%
+		top: 0 
+		left: 0
+		width: 100% 
+		border-left: 1px solid #000 
+		transform: translate(50%,0)
+	&__right
+		position: absolute
+		height: 100%
+		top: 0 
+		right: 0 
+		width: 100% 
+		border-right: 1px solid #000 
+		transform: translate(-50px,0)
+	&__line
+		position: absolute
+		width: 50px 
+		height: 1px 
+		left: -50px
+		height: 1px 
+		top: 50% 
+		overflow: hidden
+	&__moveline
+		transform: translate(-100%, 0)
+		background: #000 
+		width: 100%
+		height: 1px  
+		position: absolute
+		left: 0 
+	&.is-right
+		margin-left: -190px 
+		.tooltip__moveline
+			transform: translate(100%, 0)
+		.tooltip__line
+			left: auto
+			right: -50px 
+		
