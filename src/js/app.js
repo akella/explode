@@ -63,7 +63,7 @@ export default class Sketch {
     // var aspect = window.innerWidth / window.innerHeight;
     // this.camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -1000, 1000 );
     this.camera.position.set( 0, 0,4 );
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.time = 0;
     this.loader = new THREE.GLTFLoader().setPath( 'models/' );
     THREE.DRACOLoader.setDecoderPath( 'js/lib/draco/' );
@@ -118,7 +118,7 @@ export default class Sketch {
           // child.material = new THREE.MeshBasicMaterial( {wireframe:true,depthTest: false,color: 0x00ff00} );
         }
         if ( child.name==='Voronoi_Fracture' ) {
-          console.log(child,'VORONOI');
+          // console.log(child,'VORONOI');
           // console.log(child.children.length,child.children[0].children.length,'len');
 
           if(child.children[0].children.length>2) {
@@ -151,7 +151,7 @@ export default class Sketch {
         if(v.isMesh) return false;
         else {
           j++;
-          console.log(j,v);
+          // console.log(j,v);
           let vtempo = that.processSurface(v, j);
 
 
@@ -250,7 +250,7 @@ export default class Sketch {
 
     let len = v.children[0].geometry.attributes.position.array.length/3;
     let len1 = v.children[1].geometry.attributes.position.array.length/3;
-    console.log(len,len1);
+    // console.log(len,len1);
     // fragment id
     let offset = new Array(len).fill(j/100);
     vtemp.addAttribute( 'offset', new THREE.BufferAttribute( new Float32Array(offset), 1 ) );
@@ -442,6 +442,17 @@ export default class Sketch {
       dist = this.mouseX;
       this.settings.progress = dist*dist;
     });
+
+    document.addEventListener('touchmove',(e) => {
+      this.mouseX = ( e.touches[0].clientX / this.width ) * 2 - 1;
+      this.mouseY = - ( e.touches[0].clientY / this.height ) * 2 + 1;
+      let dist = Math.sqrt(this.mouseX*this.mouseX + this.mouseY*this.mouseY);
+      dist = this.mouseX;
+      this.settings.progress = dist*dist;
+
+    });
+
+    
   }
 
 
