@@ -48,7 +48,7 @@ export default class Sketch {
     
 
 
-    this.renderer = new THREE.WebGLRenderer({
+    this.renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       alpha: this.backgroundColor==='transparent'
     });
@@ -128,7 +128,7 @@ export default class Sketch {
     let poses = [];
     this.voron = [];
 
-    this.loader.load( 'ico.glb', function( gltf ) {
+    this.loader.load( 'ico-more.glb', function( gltf ) {
  
       // console.log(gltf.scene);
 
@@ -176,8 +176,8 @@ export default class Sketch {
           let vtempo = that.processSurface(v, j);
 
 
-          that.geoms1.push(vtempo.surface);
-          that.geoms.push(vtempo.volume);
+          that.geoms.push(vtempo.surface);
+          that.geoms1.push(vtempo.volume);
           return true;
         }
       });
