@@ -1,6 +1,8 @@
 uniform float time;
 uniform float progress;
 uniform float inside;
+uniform vec3 surfaceColor;
+uniform vec3 insideColor;
 
 varying vec2 vUv;
 varying vec2 vUv1;
@@ -36,14 +38,14 @@ void main()	{
 	
 	if(inside>0.5){
 		gl_FragColor = vec4(1.,0.,0.,1.);
-		gl_FragColor = vec4(l,l,l,1.);
+		gl_FragColor = vec4(l,l,l,1.)*vec4(surfaceColor,1.);
 		// gl_FragColor = vec4(vNormal,1.);
 		
 	} else{
 		gl_FragColor = vec4(abs(vNormal),1.);
 		gl_FragColor = vec4(l,l,l,1.)*vec4(1.,0.,0.,1.);
 		
-		gl_FragColor = reflectedColor*vec4(1.,0.,0.,1.);
+		gl_FragColor = reflectedColor*vec4(insideColor,1.);
 	}
 
 	// gl_FragColor = vec4(vTemp);

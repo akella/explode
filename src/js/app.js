@@ -37,9 +37,27 @@ export default class Sketch {
   constructor(selector) {
     this.scene = new THREE.Scene();
 
+    
+
+    this.container = document.getElementById('container');
+    this.surfaceColor = this.container.getAttribute('data-surface').substring(1);
+    this.insideColor = this.container.getAttribute('data-inside').substring(1);
+    this.backgroundColor = this.container.getAttribute('data-background');
+    this.surfaceColor = new THREE.Color(parseInt('0x'+this.surfaceColor));
+    this.insideColor = new THREE.Color(parseInt('0x'+this.insideColor));
+    
+
+
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: true,
+      alpha: this.backgroundColor==='transparent'
     });
+    if(this.backgroundColor==='transparent') {
+      this.renderer.setClearColor( 0x000000, 0 );
+    } else{
+      this.backgroundColor = parseInt('0x'+this.backgroundColor.substring(1));
+      this.renderer.setClearColor( this.backgroundColor, 1 );
+    }
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
@@ -48,9 +66,12 @@ export default class Sketch {
     this.mouseX = 0;
     this.mouseY = 0;
     this.renderer.setSize(this.width, this.height);
-    this.renderer.setClearColor( 0x000000, 1 );
+    ;
+    
 
-    this.container = document.getElementById('container');
+    
+
+    console.log(this.surfaceColor);
     this.container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(
@@ -62,7 +83,7 @@ export default class Sketch {
     // var frustumSize = 10;
     // var aspect = window.innerWidth / window.innerHeight;
     // this.camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -1000, 1000 );
-    this.camera.position.set( 0, 0,4 );
+    this.camera.position.set( 0, 0,7 );
     // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.time = 0;
     this.loader = new THREE.GLTFLoader().setPath( 'models/' );
@@ -94,8 +115,8 @@ export default class Sketch {
     this.settings = {
       progress: 0
     };
-    this.gui = new dat.GUI();
-    this.gui.add(this.settings, 'progress',0,0.25,0.001);
+    // this.gui = new dat.GUI();
+    // this.gui.add(this.settings, 'progress',0,0.25,0.001);
   }
 
 
@@ -107,7 +128,7 @@ export default class Sketch {
     let poses = [];
     this.voron = [];
 
-    this.loader.load( 'heart-high.glb', function( gltf ) {
+    this.loader.load( 'ico.glb', function( gltf ) {
  
       // console.log(gltf.scene);
 
@@ -155,8 +176,8 @@ export default class Sketch {
           let vtempo = that.processSurface(v, j);
 
 
-          that.geoms.push(vtempo.surface);
-          that.geoms1.push(vtempo.volume);
+          that.geoms1.push(vtempo.surface);
+          that.geoms.push(vtempo.volume);
           return true;
         }
       });
@@ -405,6 +426,8 @@ export default class Sketch {
         time: { type: 'f', value: 0 },
         progress: { type: 'f', value: 0 },
         inside: { type: 'f', value: 0 },
+        surfaceColor: { type: 'v3', value: this.surfaceColor },
+        insideColor: { type: 'v3', value: this.insideColor },
         matcap: { type: 't', value: new THREE.TextureLoader().load('img/matcap.jpg') },
         tCube: { value: that.textureCube },
         pixels: {type: 'v2', value: new THREE.Vector2(window.innerWidth,window.innerHeight)},
@@ -463,6 +486,7 @@ export default class Sketch {
     this.material1.uniforms.progress.value = this.settings.progress;
     let t = this.settings.progress;
     this.scene.rotation.y = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
+    this.scene.rotation.z = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
     requestAnimationFrame(this.animate.bind(this));
     this.render();
   }

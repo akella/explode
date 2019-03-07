@@ -57,7 +57,7 @@ void main() {
 
   vTemp = 1. - (position.y*10. + 1.)/2.;
   vTemp =  (centroid.x*0.4 + 1.)/2.;
-  vTemp =  1. - (centroid.z*1.4 + 1.)/2.;
+  vTemp =  1. - ((centroid.x + centroid.y)*0.5 + 1.)/2.;
 
   tProgress = easeOutQuint(min(1.0, max(0.0, (progress - vTemp*0.4) /0.6)));
   tProgress = min(1.0, max(0.0, (progress - vTemp*0.4) /0.6));

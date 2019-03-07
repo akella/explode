@@ -31,3 +31,5 @@ _tmp
 node_modules
 bower_components
 src/models/
+*.map
+build/css/app.css.map
