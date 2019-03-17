@@ -9,4 +9,21 @@ title: Index page
 		
 	</div>
 
+	<script type="text/javascript" src="js/app.js"></script>
+
+	<script>
+		console.log(explosion);
+		let icosahedron = new explosion.default(
+			'container',
+			{
+				surface: '00ffff',
+				inside: '00ff00',
+				background: 'ffffff',
+			}
+		);
+		console.log(icosahedron);
+		console.log(icosahedron.camera); // three perspective camera
+		console.log(icosahedron.settings.progress); // explosion progress, 0 to 1
+	</script>
+
 {% endblock %}

@@ -2,16 +2,11 @@ import * as THREE from 'three';
 
 import fragment from './shader/fragment.glsl';
 import vertex from './shader/vertex.glsl';
-import * as dat from 'dat.gui';
+// import * as dat from 'dat.gui';
 require('./lib/gltfloader');
 import  './lib/draco';
 import './lib/BufferUtils';
 
-
-// import * as BAS from 'three-bas';
-
-import {TimelineMax} from 'gsap';
-var OrbitControls = require('three-orbit-controls')(THREE);
 
 function getRandomAxis() {
   return new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 ).normalize();
@@ -19,7 +14,6 @@ function getRandomAxis() {
 const sign = function(n) { return n === 0 ? 1 : n/Math.abs(n); };
 
 
-// make that for buffer geometry .attributes.position
 function getCentroid(geometry) {
   let ar = geometry.attributes.position.array;
   let len = ar.length;
@@ -34,15 +28,20 @@ function getCentroid(geometry) {
 
 
 export default class Sketch {
-  constructor(selector) {
+  constructor(selector, colors, inverted) {
     this.scene = new THREE.Scene();
 
     
+    this.inverted = inverted || false;
+    this.container = document.getElementById(selector);
 
-    this.container = document.getElementById('container');
-    this.surfaceColor = this.container.getAttribute('data-surface').substring(1);
-    this.insideColor = this.container.getAttribute('data-inside').substring(1);
-    this.backgroundColor = this.container.getAttribute('data-background');
+    // get colors
+    // this.surfaceColor = this.container.getAttribute('data-surface').substring(1);
+    this.surfaceColor = colors.surface;
+    // this.insideColor = this.container.getAttribute('data-inside').substring(1);
+    this.insideColor = colors.inside;
+    // this.backgroundColor = this.container.getAttribute('data-background');
+    this.backgroundColor = colors.background;
     this.surfaceColor = new THREE.Color(parseInt('0x'+this.surfaceColor));
     this.insideColor = new THREE.Color(parseInt('0x'+this.insideColor));
     
@@ -55,7 +54,7 @@ export default class Sketch {
     if(this.backgroundColor==='transparent') {
       this.renderer.setClearColor( 0x000000, 0 );
     } else{
-      this.backgroundColor = parseInt('0x'+this.backgroundColor.substring(1));
+      this.backgroundColor = parseInt('0x'+this.backgroundColor,16);
       this.renderer.setClearColor( this.backgroundColor, 1 );
     }
 
@@ -65,13 +64,12 @@ export default class Sketch {
     this.height = window.innerHeight;
     this.mouseX = 0;
     this.mouseY = 0;
+    this.targetmouseX = 0;
+    this.targetmouseY = 0;
     this.renderer.setSize(this.width, this.height);
-    ;
-    
 
-    
 
-    console.log(this.surfaceColor);
+    // console.log(this.surfaceColor);
     this.container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(
@@ -80,9 +78,6 @@ export default class Sketch {
       0.001, 1000
     );
 
-    // var frustumSize = 10;
-    // var aspect = window.innerWidth / window.innerHeight;
-    // this.camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -1000, 1000 );
     this.camera.position.set( 0, 0,7 );
     // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.time = 0;
@@ -96,21 +91,18 @@ export default class Sketch {
     
     this.setupcubeTexture();
     this.resize();
-    this.addLights();
     this.addObjects();
     this.animate();
     this.load();
     this.settings();
-    this.mouse();
+    // this.mouse();
 
-    // let g = new THREE.BoxBufferGeometry(2,2,2);
-    // let m = new THREE.MeshBasicMaterial( {color: 0x00ff00});
-    // this.scene.add(new THREE.Mesh(g,m));
+
 
   }
 
   settings() {
-    // @todo cut geometry to change number of dots
+
     let that = this;
     this.settings = {
       progress: 0
@@ -130,7 +122,7 @@ export default class Sketch {
 
     this.loader.load( 'ico-more.glb', function( gltf ) {
  
-      // console.log(gltf.scene);
+
 
 
 
@@ -139,8 +131,6 @@ export default class Sketch {
           // child.material = new THREE.MeshBasicMaterial( {wireframe:true,depthTest: false,color: 0x00ff00} );
         }
         if ( child.name==='Voronoi_Fracture' ) {
-          // console.log(child,'VORONOI');
-          // console.log(child.children.length,child.children[0].children.length,'len');
 
           if(child.children[0].children.length>2) {
             child.children.forEach(f => {
@@ -157,13 +147,7 @@ export default class Sketch {
         }
       } );
       
-      // that.scene.add(that.voron,'vor');
-      // console.log(that.voron,'voron');
-      // that.voron.forEach(m => {
-      //   that.scene.add(m.clone());
-      //   console.log('test vvv');
-      // });
-      // console.log(that.scene);
+
       that.geoms = [];
       that.geoms1 = [];
       let j = 0;
@@ -172,12 +156,16 @@ export default class Sketch {
         if(v.isMesh) return false;
         else {
           j++;
-          // console.log(j,v);
           let vtempo = that.processSurface(v, j);
 
-
-          that.geoms.push(vtempo.surface);
-          that.geoms1.push(vtempo.volume);
+          if(that.inverted) {
+            that.geoms1.push(vtempo.surface);
+            that.geoms.push(vtempo.volume);
+          } else{
+            that.geoms.push(vtempo.surface);
+            that.geoms1.push(vtempo.volume);
+          }
+          
           return true;
         }
       });
@@ -194,13 +182,7 @@ export default class Sketch {
       );
       that.scene.add(mesh1);
 
-      // mesh.rotation.y = mesh1.rotation.y = Math.PI/2;
-
-      // let tl = new TimelineMax();
-      // tl.fromTo(that.settings,5,
-      //   {progress: 0},
-      //   {yoyo:true,progress:1, repeat: 3}
-      // ).repeatDelay(2).repeat(-1);
+      
 
 
 
@@ -216,15 +198,10 @@ export default class Sketch {
   }
 
   // begin surface
-  // begin surface
-  // begin surface
-  // begin surface
   processSurface(v,j) {
 
     let c = v.position;
     let vtemp, vtemp1;
-    // console.log(c);
-    // c = new THREE.Vector3(0,0,0);
     // geometry changes
     vtemp = v.children[0].geometry.clone();
     // vtemp = vtemp.applyMatrix( new THREE.Matrix4().makeRotationY(Math.PI/2) );
@@ -233,46 +210,12 @@ export default class Sketch {
     vtemp1 = v.children[1].geometry;
     // vtemp1 = vtemp1.applyMatrix( new THREE.Matrix4().makeRotationY(Math.PI/2) );
     vtemp1 = vtemp1.clone().applyMatrix( new THREE.Matrix4().makeTranslation(c.x, c.y, c.z ));
-    // debug
-    // let mesh = new THREE.Mesh(vtemp1, new THREE.MeshBasicMaterial( {color:0xff0000,side: THREE.DoubleSide, wireframe: true}));
-    // v.children[0].material = new THREE.MeshBasicMaterial( {wireframe:true,color:0xff0000,side: THREE.DoubleSide});
-    // v.children[1].material = new THREE.MeshBasicMaterial( {wireframe:true,color:0x00ff00,side: THREE.DoubleSide});
-    // console.log({v});
-    // let test = v.clone();
-    // let nn = v.children[1].clone();
-    // nn.geometry = v.children[1].geometry.clone();
-    // nn.material = new THREE.MeshBasicMaterial( {color:0x00ff00,side: THREE.DoubleSide, wireframe: true});
-    // nn.position.copy(v.position);
-    
-    // nn.rotation.copy(v.rotation);
-    // nn.rotateX(Math.PI);
-    // nn.geometry.applyMatrix( new THREE.Matrix4().makeRotationX(Math.PI) );
-
-    // console.log(v.rotation,'rot');
-    // nn.position.copy(v.position);
-    // nn.geometry.applyMatrix( new THREE.Matrix4().makeTranslation(v.position.x, v.position.y, v.position.z ) );
-
-    // nn.geometry.applyMatrix( new THREE.Matrix4().makeTranslation(-v.position.x, -v.position.y, -v.position.z ) );
-    // nn.geometry.applyMatrix( new THREE.Matrix4().makeRotationX(Math.PI) );
-    // nn.geometry.applyMatrix( new THREE.Matrix4().makeTranslation(v.position.x, v.position.y, v.position.z ) );
-
-    // console.log({v},{nn},{test});
-    // this.scene.add(test);
-    // if(j===1) {
-    // this.scene.add(test);
-    // this.scene.add(nn);
-    // this.scene.add( new THREE.AxesHelper( 20 ) );
-    // }
-    
-    // 
-    // console.log({nn});
     
 
 
     let len = v.children[0].geometry.attributes.position.array.length/3;
     let len1 = v.children[1].geometry.attributes.position.array.length/3;
-    // console.log(len,len1);
-    // fragment id
+    //  id
     let offset = new Array(len).fill(j/100);
     vtemp.addAttribute( 'offset', new THREE.BufferAttribute( new Float32Array(offset), 1 ) );
 
@@ -319,7 +262,6 @@ export default class Sketch {
     return {surface: vtemp, volume: vtemp1};
   }
   // end surface
-  // end surface
   
 
   setupResize() {
@@ -341,61 +283,7 @@ export default class Sketch {
   }
 
 
-  addLights() {
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    directionalLight.position.set(-3, 2, 2);
-    // directionalLight.position.set(10, 10, 0);
-    this.scene.add(directionalLight);
-    // let helper = new THREE.CameraHelper( directionalLight.shadow.camera );
-    // this.scene.add(helper);
 
-
-
-    // const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.1);
-    // directionalLight2.position.set(-10, 20, 1);
-    // directionalLight2.castShadow = true;
-    // directionalLight2.shadow.camera.near = -2;
-    // directionalLight2.shadow.camera.far = 10;
-    // this.scene.add(directionalLight2);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-    this.scene.add(ambientLight);
-
-    // const light1 = new THREE.HemisphereLight(0x776E88, 0xffffff, .5);
-    // this.scene.add(light1);
-
-
-    // let light = new THREE.SpotLight(0xffffff);
-    // light.position.set(700, 0, 0);
-    // // light.angle = .8;
-    // light.intensity = 100;
-    // let helper1 = new THREE.CameraHelper( light.shadow.camera );
-    // // this.scene.add(helper1);
-
-
-    // var light3 = new THREE.PointLight( 0xffffff, 1, 1000 );
-    // light3.position.set( -700, 0, 0 );
-    // this.scene.add( light3 );
-    // let helper3 = new THREE.CameraHelper( light3.shadow.camera );
-    // this.scene.add(helper3);
-
-    var light = new THREE.SpotLight( 0xffffff, 0.3 );
-    light.angle = Math.PI/2 - 0.2;
-    light.penumbra = 0;
-    // light.castShadow = true; // default false
-    // light.receiveShadow = true; // default false
-    
-    //Set up shadow properties for the light
-    light.shadow.mapSize.width = 4096; // default
-    light.shadow.mapSize.height = 4096; // default
-    light.shadow.camera.near = 0.3; // default
-    
-    light.shadow.camera.far = 5; //
-    this.scene.add( light );
-
-    // var helper1 = new THREE.CameraHelper( light.shadow.camera );
-    // this.scene.add( helper1 );
-  }
 
   setupcubeTexture() {
     let that = this;
@@ -428,7 +316,7 @@ export default class Sketch {
         inside: { type: 'f', value: 0 },
         surfaceColor: { type: 'v3', value: this.surfaceColor },
         insideColor: { type: 'v3', value: this.insideColor },
-        matcap: { type: 't', value: new THREE.TextureLoader().load('img/matcap.jpg') },
+        // matcap: { type: 't', value: new THREE.TextureLoader().load('img/matcap.jpg') },
         tCube: { value: that.textureCube },
         pixels: {type: 'v2', value: new THREE.Vector2(window.innerWidth,window.innerHeight)},
         uvRate1: {
@@ -459,18 +347,18 @@ export default class Sketch {
   mouse() {
 
     document.addEventListener('mousemove',(e) => {
-      this.mouseX = 2*(e.clientX - this.width/2)/this.width;
-      this.mouseY = 2*(e.clientY - this.height/2)/this.height;
-      let dist = Math.sqrt(this.mouseX*this.mouseX + this.mouseY*this.mouseY);
-      dist = this.mouseX;
+      this.targetmouseX = 2*(e.clientX - this.width/2)/this.width;
+      this.targetmouseY = 2*(e.clientY - this.height/2)/this.height;
+      let dist = Math.sqrt(this.targetmouseX*this.targetmouseX + this.targetmouseY*this.targetmouseY);
+      dist = this.targetmouseX;
       this.settings.progress = dist*dist;
     });
 
     document.addEventListener('touchmove',(e) => {
-      this.mouseX = ( e.touches[0].clientX / this.width ) * 2 - 1;
-      this.mouseY = - ( e.touches[0].clientY / this.height ) * 2 + 1;
-      let dist = Math.sqrt(this.mouseX*this.mouseX + this.mouseY*this.mouseY);
-      dist = this.mouseX;
+      this.targetmouseX = ( e.touches[0].clientX / this.width ) * 2 - 1;
+      this.targetmouseY = - ( e.touches[0].clientY / this.height ) * 2 + 1;
+      let dist = Math.sqrt(this.targetmouseX*this.targetmouseX + this.targetmouseY*this.targetmouseY);
+      dist = this.targetmouseX;
       this.settings.progress = dist*dist;
 
     });
@@ -482,14 +370,19 @@ export default class Sketch {
 
   animate() {
     this.time += 0.05;
-    this.material.uniforms.progress.value = this.settings.progress;
-    this.material1.uniforms.progress.value = this.settings.progress;
-    let t = this.settings.progress;
-    this.scene.rotation.y = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
-    this.scene.rotation.z = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
+    this.mouseX += (this.targetmouseX - this.mouseX)*0.05;
+    // this.settings.progress = this.mouseX;
+    // console.log(this.settings.progress, this.targetmouseX);
+    this.material.uniforms.progress.value = Math.abs(this.settings.progress);
+    this.material1.uniforms.progress.value = Math.abs(this.settings.progress);
+    // let t = Math.abs(this.settings.progress);
+    
+    this.scene.rotation.y = Math.PI/2;
+    // this.scene.rotation.y = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
+    // this.scene.rotation.z = Math.PI/2 - t*(2 - t)*1*Math.PI * sign(this.mouseX);
     requestAnimationFrame(this.animate.bind(this));
     this.render();
   }
 }
 
-new Sketch('container');
+// new Sketch('container');

@@ -25,6 +25,8 @@ function createConfig(env) {
       path: path.join(__dirname, config.dest.js),
       filename: '[name].js',
       publicPath: 'js/',
+      library: 'explosion',
+      libraryTarget: 'umd'
     },
     devtool: isProduction ?
       '#source-map' :
